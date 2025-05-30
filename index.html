@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>STOMP WebSocket Connector</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+        input {
+            width: 400px;
+            padding: 8px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 8px 16px;
+        }
+    </style>
+</head>
+<body>
+<h2>Connect to WebSocket</h2>
+<input id="wsUrl" type="text" placeholder="Enter WebSocket URL..." value="https://localhost:8443/ws" />
+<button id="connectBtn">Connect</button>
+
+<script>
+    document.getElementById("connectBtn").addEventListener("click", () => {
+        const url = document.getElementById("wsUrl").value.trim();
+        if (!url) {
+            alert("Please enter a WebSocket URL.");
+            return;
+        }
+
+        const socket = new SockJS(url);
+        const stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, frame => {
+            console.log('✅ Connected: ' + frame);
+            const channel = '/topic/NotificationAddedCastV1';
+            stompClient.subscribe(channel, (message) => {
+                console.log('📩 Message received:', message.body);
+            }, {
+                id: 'NotificationAddedCastV1',
+                userId: '2',
+            });
+        }, error => {
+            console.error('❌ Connection error:', error);
+        });
+    });
+</script>
+</body>
+</html>
